@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="UTF-8" />
+		<title>地图</title>
+		<script type="text/javascript" src="http://api.map.baidu.com/api?key=&v=1.1&services=true"></script>
+
+	</head>
+	<style>
+	body{
+		background: #ccc;
+	}
+		#map_box {
+			width: 500px;
+			height: 300px;
+			background: red;
+			margin: 50px auto;
+		}
+		
+		.iw_poi_content {
+			text-align: center;
+			font-size: 14px;
+			font-weight: bold;
+			font-family: "微软雅黑";
+			
+		}
+		
+		.BMapLabel{
+			background-image: url(images/che.png);
+			width:23px; height: 37px;
+			border: none;
+		}
+
+
+	</style>
+
+	<body>
+		<div id="map_box"></div>
+	</body>
+	<script>
+	   function initMap(){
+	   	createMap();
+	   	setMapEvent();
+        addMarker();
+	   	addPolyline();
+	   }
+	   
+	//创建地图
+	function createMap(){
+		var map = new BMap.Map("map_box");
+		var point = new BMap.Point(120.095541,30.294196);
+		map.centerAndZoom(point,15);
+		window.map = map;
+	}
+	
+	//添加地图事件
+	function setMapEvent(){
+		map.enableDragging();
+		map.enableScrollWheelZoom();
+		map.enableDoubleClickZoom();
+	}
+	
+	
+	    //标注点数组
+    var markerArr = [{title:"",content:"杭州润缘有限公司<br>车型:桑塔纳2000&nbsp&nbsp温度:23℃<br/>车牌号:浙A88888 &nbsp湿度:0%<br>采集时间:2016.9.19&nbsp;13:23:48<br>定位时间:2016.9.19&nbsp;13:23:48",point:"120.083289|30.294351",isOpen:0,icon:{w:21,h:21,l:0,t:0,x:6,lb:5}}
+		 ,{title:"",content:"我的备注",point:"120.106869|30.299286",isOpen:0,icon:{w:23,h:25,l:46,t:21,x:9,lb:12}}
+		 ];
+    //创建marker
+    function addMarker(){
+        for(var i=0;i<markerArr.length;i++){
+            var json = markerArr[i];
+            var p0 = json.point.split("|")[0];
+            var p1 = json.point.split("|")[1];
+            var point = new BMap.Point(p0,p1);
+			var iconImg = createIcon(json.icon);
+            var marker = new BMap.Marker(point,{icon:iconImg});
+			var iw = createInfoWindow(i);
+			var label = new BMap.Label(json.title,{"offset":new BMap.Size(json.icon.lb-json.icon.x+10,-20)});
+			marker.setLabel(label);
+            map.addOverlay(marker);
+            label.setStyle({
+                        borderColor:"#808080",
+                        color:"#333",
+                        cursor:"pointer"
+            });
+			
+			(function(){
+				var index = i;
+				var _iw = createInfoWindow(i);
+				var _marker = marker;
+				_marker.addEventListener("click",function(){
+				    this.openInfoWindow(_iw);
+			    });
+			    _iw.addEventListener("open",function(){
+				    _marker.getLabel().hide();
+			    })
+			    _iw.addEventListener("close",function(){
+				    _marker.getLabel().show();
+			    })
+				label.addEventListener("click",function(){
+				    _marker.openInfoWindow(_iw);
+			    })
+				if(!!json.isOpen){
+					label.hide();
+					_marker.openInfoWindow(_iw);
+				}
+			})()
+        }
+    }
+    
+    
+    
+    
+    
+    //创建窗口
+    function createInfoWindow(i){
+        var json = markerArr[i];
+        var iw = new BMap.InfoWindow("<b class='iw_poi_title' title='" + json.title + "'>" + json.title + "</b><div class='iw_poi_content'>"+json.content+"</div>");
+        return iw;
+    }
+    
+        function createIcon(json){
+        var icon = new BMap.Icon( new BMap.Size(json.w,json.h),{imageOffset: new BMap.Size(-json.l,-json.t),infoWindowOffset:new BMap.Size(json.lb+5,1),offset:new BMap.Size(json.x,json.h)})
+        return icon;
+    }
+     //线
+    var plPoints = [{style:"solid",weight:4,color:"#f00",opacity:0.6,points:["120.083289|30.294351","120.106869|30.299286"]}];
+    //向地图中添加线函数
+    function addPolyline(){
+		for(var i=0;i<plPoints.length;i++){
+			var json = plPoints[i];
+			var points = [];
+			for(var j=0;j<json.points.length;j++){
+				var p1 = json.points[j].split("|")[0];
+				var p2 = json.points[j].split("|")[1];
+				points.push(new BMap.Point(p1,p2));
+			}
+			var line = new BMap.Polyline(points,{strokeStyle:json.style,strokeWeight:json.weight,strokeColor:json.color,strokeOpacity:json.opacity});
+			map.addOverlay(line);
+		}
+	}
+    
+    initMap();//创建和初始化地图	
+	</script>
+
+</html>
